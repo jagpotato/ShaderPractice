@@ -1,0 +1,71 @@
+﻿#pragma kernel Init
+#pragma kernel Update
+
+struct Object {
+	float3 pos;
+	float3 vel;
+	float3 acc;
+	float3 rot;
+	float3 angVel;
+	float3 scale;
+	float4 col;
+};
+
+RWStructuredBuffer<Object> objects;
+float4 posRange;
+
+float rand (float2 seed)
+{
+	return frac(sin(dot(seed.xy, float2(12.9898, 78.233))) * 43758.5453);
+}
+
+float3 rand3 (float2 seed)
+{
+	return float3(rand(seed * 1), rand(seed * 2), rand(seed * 3));
+}
+
+float4 rand4 (float2 seed)
+{
+	return float4(rand(seed * 1), rand(seed * 2), rand(seed * 3), rand(seed * 4));
+}
+
+[numthreads(8, 8, 1)]
+void Init (uint id : SV_DispatchThreadID)
+{
+	Object obj;
+	float2 seed = float2(id + 1, id + 2);
+	// obj.pos = 2.0 * (rand3(seed) - 0.5) * posRange.xyz;
+	obj.pos = float3(10, 20, 30);
+	obj.pos += (rand3(seed) - 0.5) * 500;
+
+	obj.vel = float3(0.0, 0.0, 0.0);
+	obj.acc = float3(0.0, 0.0, 0.0);
+	obj.rot = rand3(seed + 3) * 100;
+	obj.angVel = (rand3(seed + 3) - 0.5) * 5;
+	obj.scale = 0.1 + rand3(seed + 3) * 1.0;
+	// obj.scale = float3(1, 1, 1);
+	obj.col = float4(0.0, 0.0, 0.0, 1.0);
+	// obj.col = float4(rand3(seed + 3), 1.0);
+	objects[id] = obj;
+}
+
+float deltaTime;
+float3 attractor;
+
+[numthreads(8, 8, 1)]
+void Update (uint id : SV_DispatchThreadID)
+{
+	Object obj = objects[id];
+	obj.rot += obj.angVel * deltaTime;
+
+  float p = attractor.x;
+	float r = attractor.y;
+	float b = attractor.z;
+	obj.vel.x = -p * obj.pos.x + p * obj.pos.y;
+	obj.vel.y = -obj.pos.x * obj.pos.z + r * obj.pos.x - obj.pos.y;
+	obj.vel.z = obj.pos.x * obj.pos.y - b * obj.pos.z;
+	
+	obj.pos += obj.vel * deltaTime * 0.1;
+	obj.col = float4(normalize(obj.vel), 1.0);
+	objects[id] = obj;
+}
