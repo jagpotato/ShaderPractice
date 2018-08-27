@@ -1,0 +1,13 @@
+﻿#pragma kernel CSMain
+
+RWStructuredBuffer<float> buffer;
+Texture2D<float4> tex;
+RWTexture2D<float4> texCopy;
+
+[numthreads(8, 8, 1)]
+void CSMain (uint2 id : SV_DispatchThreadID)
+{
+	// int id = dispatchID.x + dispatchID.y * 128;
+	// buffer[id] = id;
+	texCopy[id] = tex[id];
+}
