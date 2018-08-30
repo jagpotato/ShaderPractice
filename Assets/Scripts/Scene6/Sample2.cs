@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
+using System.Runtime.InteropServices;
+
 public class Sample2 : MonoBehaviour {
 	[SerializeField]
 	private int instanceCount;
@@ -63,10 +65,7 @@ public class Sample2 : MonoBehaviour {
 	}
 
 	private void UpdateBuffers () {
-		positionComputeShader.SetFloat("_Time", Time.time);
-
-		int bs = instanceCount / 64;
-		positionComputeShader.Dispatch(positionComputeKernelId, bs, 1, 1);
+		positionComputeShader.Dispatch(positionComputeKernelId, instanceCount, 1, 1);
 	}
 
 	void OnDisable () {
