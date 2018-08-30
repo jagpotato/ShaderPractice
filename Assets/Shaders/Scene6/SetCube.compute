@@ -1,14 +1,27 @@
-﻿// Each #kernel tells which function to compile; you can have many kernels
-#pragma kernel CSMain
+﻿#pragma kernel CSMain
 
-// Create a RenderTexture with enableRandomWrite flag and set it
-// with cs.SetTexture
-RWTexture2D<float4> Result;
+#include "PixelCube.cginc"
 
-[numthreads(8,8,1)]
-void CSMain (uint3 id : SV_DispatchThreadID)
+RWStructuredBuffer<PixelCube> pixelCubes;
+
+float rand (float2 seed) {
+	return frac(sin(dot(seed.xy, float2(12.9898, 78.233))) * 43758.5453);
+}
+
+float3 rand3 (float2 seed) {
+	return float3(rand(seed * 1), rand(seed * 2), rand(seed * 3));
+}
+
+[numthreads(1, 1, 1)]
+void CSMain (uint id : SV_DispatchThreadID)
 {
-	// TODO: insert actual code here!
+  // PixelCube cube;
+	// float2 seed = float2(id + 1, id + 2);
+	// cube.position = float3(10, 20, 30);
+	// pixelCubes[id] = cube;
 
-	Result[id.xy] = float4(id.x & id.y, (id.x & 15)/15.0, (id.y & 15)/15.0, 0.0);
+	PixelCube cube;
+	float2 seed = float2(id + 1, id + 2);
+	cube.position = 2.0*(rand3(seed)-0.5) * float3(100.0f, 100.0f, 100.0f);
+	pixelCubes[id] = cube;
 }
