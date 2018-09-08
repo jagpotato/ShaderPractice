@@ -1,4 +1,4 @@
-﻿Shader "Unlit/Example2_1"
+﻿Shader "Unlit/Eg2_1"
 {
 	SubShader
 	{
